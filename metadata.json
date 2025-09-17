@@ -1,0 +1,5 @@
+{
+  "name": "Student Schedule Viewer",
+  "description": "An interactive web application to view class schedules for different student groups. Select a group to see a detailed timetable with color-coded days and highlighted lectures.",
+  "requestFramePermissions": []
+}
