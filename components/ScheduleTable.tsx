@@ -1,33 +1,31 @@
 import React from 'react';
-import type { ScheduleGroup, ScheduleEntry } from '../types';
-import { DAY_COLORS } from '../constants';
+import type { AcademicLevel, ScheduleEntry } from '../types';
+import { DAY_COLORS, ALL_DAYS, ALL_TIME_SLOTS } from '../constants';
 import BackArrowIcon from './icons/BackArrowIcon';
 
 interface ScheduleTableProps {
-  group: ScheduleGroup;
+  level: AcademicLevel;
+  group: string;
   schedule: ScheduleEntry[];
   onBack: () => void;
 }
 
-const DAYS = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi'];
-const TIME_SLOTS = [
-  '08:00–09:30',
-  '09:30–11:00',
-  '11:00–12:30',
-  '12:30–14:00',
-  '14:00–15:30',
-  '15:00–17:00'
-];
-
 const CourseCell = ({ course }: { course: string }) => {
+  if (course.toLowerCase().includes('cours amphi a')) {
+     return (
+        <div className="bg-indigo-100 p-2 rounded-lg shadow-sm h-full flex flex-col justify-center text-center ring-1 ring-indigo-200 border-l-4 border-indigo-500">
+            <p className="font-bold text-sm text-indigo-800">Cours AMPHI A</p>
+        </div>
+     )
+  }
+
   const parts = course.split('–');
   const subject = parts[0].trim();
   const details = parts.length > 1 ? parts.slice(1).join('–').trim() : '';
-  const isAmphi = course.toLowerCase().includes('amphi');
   const isOnline = course.toLowerCase().includes('distance') || course.toLowerCase().includes('en ligne');
 
   return (
-    <div className={`bg-white p-2 rounded-lg shadow-sm h-full flex flex-col justify-center text-center ring-1 ring-slate-200 ${isAmphi ? 'border-l-4 border-indigo-500' : ''}`}>
+    <div className="bg-white p-2 rounded-lg shadow-sm h-full flex flex-col justify-center text-center ring-1 ring-slate-200">
       <p className="font-bold text-sm text-slate-800">{subject}</p>
       {details && <p className="text-xs text-slate-500 mt-1">{details}</p>}
       {isOnline && (
@@ -45,6 +43,13 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({ group, schedule, onBack }
   schedule.forEach(([day, time, course]) => {
     scheduleMap.set(`${day}-${time}`, course);
   });
+  
+  const scheduledDays = [...new Set(schedule.map(entry => entry[0]))];
+  const daysToRender = ALL_DAYS.filter(day => scheduledDays.includes(day));
+
+  const scheduledTimes = [...new Set(schedule.map(entry => entry[1]))];
+  const timesToRender = ALL_TIME_SLOTS.filter(time => scheduledTimes.some(scheduledTime => scheduledTime === time));
+
 
   return (
     <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-lg">
@@ -64,28 +69,31 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({ group, schedule, onBack }
       </div>
 
       <div className="overflow-x-auto">
-        <div className="grid grid-cols-[auto,repeat(6,minmax(120px,1fr))] min-w-[900px]">
+        <div 
+          className="grid min-w-[900px]"
+          style={{ gridTemplateColumns: `auto repeat(${timesToRender.length}, minmax(120px, 1fr))` }}
+        >
           {/* Header Row: Time Slots */}
-          <div className="sticky left-0 z-10"></div> {/* Top-left empty cell */}
-          {TIME_SLOTS.map(time => (
-            <div key={time} className="p-2 text-center text-xs font-bold text-slate-600 border-b-2 border-slate-200">
+          <div className="sticky top-0 left-0 z-20 bg-white"></div> {/* Top-left empty cell */}
+          {timesToRender.map(time => (
+            <div key={time} className="sticky top-0 p-2 text-center text-xs font-bold text-slate-600 border-b-2 border-slate-200 bg-white z-10">
               {time.replace('–', ' - ')}
             </div>
           ))}
 
           {/* Schedule Rows */}
-          {DAYS.map(day => (
+          {daysToRender.map(day => (
             <React.Fragment key={day}>
               {/* Day Header Cell */}
-              <div className={`sticky left-0 p-2 text-center font-bold text-sm z-10 ${DAY_COLORS[day].background} ${DAY_COLORS[day].text}`}>
+              <div className={`sticky left-0 p-2 pl-4 text-left font-bold text-sm z-10 ${DAY_COLORS[day]?.background || 'bg-slate-100'} ${DAY_COLORS[day]?.text || 'text-slate-800'}`}>
                 {day}
               </div>
               
               {/* Course Cells */}
-              {TIME_SLOTS.map(time => {
+              {timesToRender.map(time => {
                 const course = scheduleMap.get(`${day}-${time}`);
                 return (
-                  <div key={`${day}-${time}`} className={`p-1.5 border-b border-r border-slate-200 min-h-[100px] ${DAY_COLORS[day].background} bg-opacity-30`}>
+                  <div key={`${day}-${time}`} className={`p-1.5 border-b border-r border-slate-200 min-h-[100px] ${DAY_COLORS[day]?.background || 'bg-slate-100'} bg-opacity-30`}>
                     {course ? <CourseCell course={course} /> : null}
                   </div>
                 );

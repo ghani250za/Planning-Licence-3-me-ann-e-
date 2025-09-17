@@ -1,16 +1,25 @@
 import React from 'react';
-import type { ScheduleGroup } from '../types';
+import BackArrowIcon from './icons/BackArrowIcon';
 
 interface GroupSelectorProps {
-  groups: ScheduleGroup[];
-  onSelectGroup: (group: ScheduleGroup) => void;
+  groups: string[];
+  onSelectGroup: (group: string) => void;
+  onBack: () => void;
 }
 
-const GroupSelector: React.FC<GroupSelectorProps> = ({ groups, onSelectGroup }) => {
+const GroupSelector: React.FC<GroupSelectorProps> = ({ groups, onSelectGroup, onBack }) => {
   return (
-    <div className="bg-white p-8 rounded-2xl shadow-lg text-center">
+    <div className="bg-white p-8 rounded-2xl shadow-lg text-center relative">
+      <button
+        onClick={onBack}
+        className="absolute top-4 left-4 flex items-center gap-2 text-sm text-indigo-600 hover:text-indigo-800 font-semibold transition"
+        aria-label="Go back to level selection"
+      >
+        <BackArrowIcon />
+        Retour
+      </button>
       <h2 className="text-xl font-semibold mb-6 text-slate-700">Veuillez sélectionner votre groupe</h2>
-      <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
+      <div className="flex flex-wrap justify-center items-center gap-4">
         {groups.map((group) => (
           <button
             key={group}
